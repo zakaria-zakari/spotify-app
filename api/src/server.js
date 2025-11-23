@@ -12,6 +12,9 @@ import meRoutes, { authUser } from './routes/me.js';
 import playlistRoutes from './routes/playlists.js';
 
 const app = Fastify({ logger: true });
+// Base path for ALB routing; default to '/api' if unset
+const basePath = process.env.API_BASE_PATH || '/api';
+app.log.info({ basePath }, 'Configured API base path');
 
 app.decorate('prisma', prisma);
 app.decorate('config', { isProd: process.env.NODE_ENV === 'production' });
@@ -42,11 +45,11 @@ app.get('/debug/cookies', (req, reply) => {
     corsOrigin: process.env.FRONTEND_ORIGIN || 'http://127.0.0.1:5173'
   };
 });
+// Health endpoints (both root and prefixed) to satisfy ALB and direct checks
 app.get('/healthz', async () => ({ ok: true }));
-app.get('/readyz', async () => {
-  await prisma.$queryRaw`SELECT 1`;
-  return { ok: true };
-});
+app.get('/readyz', async () => { await prisma.$queryRaw`SELECT 1`; return { ok: true }; });
+app.get(`${basePath}/healthz`, async () => ({ ok: true }));
+app.get(`${basePath}/readyz`, async () => { await prisma.$queryRaw`SELECT 1`; return { ok: true }; });
 
 // Prometheus metrics
 const r = new client.Registry();
@@ -56,8 +59,7 @@ app.get('/metrics', async (req, reply) => {
   return r.metrics();
 });
 
-// Routes (optional base path for ALB path-based routing)
-const basePath = process.env.API_BASE_PATH || '';
+// Routes registered with configured base path
 app.register(authRoutes, { prefix: basePath });
 app.register(meRoutes, { prefix: basePath });
 app.register(playlistRoutes, { prefix: basePath });
