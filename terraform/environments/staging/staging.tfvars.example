@@ -1,0 +1,25 @@
+environment_name = "staging"
+aws_region       = "us-east-1"
+app_repository   = "https://github.com/pxl-digital/playlist-parser.git"
+
+spotify_client_id     = "your-spotify-client-id"
+spotify_client_secret = "your-spotify-client-secret"
+spotify_redirect_uri  = "http://<alb-dns>/api/auth/callback" # use terraform output `spotify_redirect_uri` after apply
+
+frontend_ami = "ami-xxxxxxxx"
+api_ami      = "ami-xxxxxxxx"
+database_ami = "ami-xxxxxxxx"
+
+frontend_instance_type = "t3.micro"
+api_instance_type      = "t3.micro"
+database_instance_type = "t3.small"
+
+public_subnet_cidrs  = ["10.0.0.0/24", "10.0.1.0/24"]
+private_subnet_cidrs = ["10.0.10.0/24", "10.0.11.0/24"]
+availability_zones   = ["us-east-1a", "us-east-1b"]
+
+ssh_key_name = "hockey.pem" # ensure this key pair exists in AWS (EC2 > Key Pairs) and matches your local private key file
+
+tags = {
+  Project = "playlistparser"
+}

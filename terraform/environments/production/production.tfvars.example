@@ -1,0 +1,25 @@
+environment_name = "production"
+aws_region       = "us-east-1"
+app_repository   = "https://github.com/pxl-digital/playlist-parser.git"
+
+spotify_client_id     = "your-spotify-client-id"
+spotify_client_secret = "your-spotify-client-secret"
+spotify_redirect_uri  = "http://<alb-dns>/api/auth/callback" # use terraform output `spotify_redirect_uri` after apply
+
+frontend_ami = "ami-xxxxxxxx"
+api_ami      = "ami-xxxxxxxx"
+database_ami = "ami-xxxxxxxx"
+
+frontend_instance_type = "t3.small"
+api_instance_type      = "t3.small"
+database_instance_type = "t3.medium"
+
+public_subnet_cidrs  = ["10.1.0.0/24", "10.1.1.0/24"]
+private_subnet_cidrs = ["10.1.10.0/24", "10.1.11.0/24"]
+availability_zones   = ["us-east-1a", "us-east-1b"]
+
+ssh_key_name = "hockey.pem"
+
+tags = {
+  Project = "playlistparser"
+}
