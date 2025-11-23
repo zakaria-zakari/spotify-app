@@ -15,6 +15,12 @@ const app = Fastify({ logger: true });
 // Base path for ALB routing; default to '/api' if unset
 const basePath = process.env.API_BASE_PATH || '/api';
 app.log.info({ basePath }, 'Configured API base path');
+app.log.info({ env: {
+  NODE_ENV: process.env.NODE_ENV,
+  API_BASE_PATH: process.env.API_BASE_PATH,
+  PORT: process.env.PORT,
+  SPOTIFY_REDIRECT_URI: process.env.SPOTIFY_REDIRECT_URI
+} }, 'Startup environment snapshot');
 
 app.decorate('prisma', prisma);
 app.decorate('config', { isProd: process.env.NODE_ENV === 'production' });
@@ -63,6 +69,16 @@ app.get('/metrics', async (req, reply) => {
 app.register(authRoutes, { prefix: basePath });
 app.register(meRoutes, { prefix: basePath });
 app.register(playlistRoutes, { prefix: basePath });
+
+// Debug route listing endpoint
+app.get(basePath + '/debug/routes', async () => ({ routes: app.printRoutes() }));
+
+// Log full route tree once plugins are ready
+app.ready().then(() => {
+  app.log.info({ routes: app.printRoutes() }, 'Registered Fastify routes');
+}).catch(err => {
+  app.log.error(err, 'Error during app.ready()');
+});
 
 const port = Number(process.env.PORT || 3000);
 app.listen({ port, host: '0.0.0.0' }).catch((e) => {
